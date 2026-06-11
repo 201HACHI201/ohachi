@@ -1,9 +1,7 @@
 /* =========================================================================
-   오하치 갤러리 — 세기말 일본 갠홈풍 다듬기
-   ※ 이 CSS는 갤러리(#bo_gall / #gall_ul / .gall_li ...) 요소에만 적용된다.
-      메인 화면·고양이 메뉴·다른 페이지는 전혀 건드리지 않는다.
-   붙여넣는 곳:  관리자(/adm) → 디자인/스킨에서 style.css 를 편집할 수 있다면
-                그 파일 맨 아래에 통째로 붙여넣어라. (FTP 없이 가능)
+   오하치 갤러리 — 세기말 일본 갠홈풍 다듬기  (v2 · 클릭 열림 고침)
+   ※ 갤러리(#bo_gall / #gall_ul / .gall_li ...) 요소에만 적용된다.
+      메인·고양이 메뉴·다른 페이지는 전혀 건드리지 않는다.
    ========================================================================= */
 
 /* 갤러리 전체를 담는 '크림빛 선반' */
@@ -57,33 +55,39 @@
   box-shadow: inset 0 0 0 1px #fffdf5, 0 2px 4px rgba(95,120,40,.16);
   transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
 }
-/* 그림이 없는 칸 → 단정한 자리표시 (✿) */
+/* 그림이 없는 칸 → 단정한 자리표시 (✿) · 클릭은 통과시킨다 */
 #body #bo_gall #gall_ul .gall_li::before{
   content:"✿"; position:absolute; inset:0; z-index:0;
   display:flex; align-items:center; justify-content:center;
   color:#d8c89a; font-size:22px;
+  pointer-events:none;
 }
 /* JS가 자동으로 채우는 빈 칸은 감춤 */
 #body #bo_gall #gall_ul .gall_li.empty{ display:none !important; }
 
-/* 섬네일 이미지 (인라인 background 그대로 살림) */
+/* 섬네일 이미지 (인라인 background 그대로 살림) · 클릭은 통과시킨다 */
 #body #bo_gall #gall_ul .gall_box{
   position:absolute; inset:0; z-index:1;
   width:100%; height:100%;
   background-size:cover !important; background-position:center !important;
   transition: transform .25s ease;
+  pointer-events:none;
 }
-/* 칸 전체를 클릭 영역으로 */
+
+/* 칸 전체를 '진짜 링크'로 덮어 클릭 = 그림 열기 */
 #body #bo_gall #gall_ul .gall_con{
-  position:absolute; inset:0; z-index:3; margin:0;
+  position:static; margin:0; pointer-events:none;
 }
 #body #bo_gall #gall_ul .gall_con .bo_tit{
+  position:absolute; inset:0; z-index:3;
   display:block; width:100%; height:100%;
+  pointer-events:auto;
+  cursor:pointer; text-indent:-9999px; overflow:hidden;
 }
-/* 관리자 체크박스는 구석에 작게 */
+/* 관리자 체크박스는 링크 위, 구석에 작게 */
 #body #bo_gall #gall_ul .gall_chk{
-  position:absolute; top:4px; right:4px; z-index:4;
-  margin:0; line-height:1;
+  position:absolute; top:4px; right:4px; z-index:5;
+  margin:0; line-height:1; pointer-events:auto;
 }
 
 /* 마우스를 얹으면 살짝 떠오르고, 테두리가 자줏빛으로 */
@@ -92,7 +96,7 @@
   transform:translateY(-3px);
   border-color:#8a2b2b;
   box-shadow: inset 0 0 0 1px #fffdf5, 0 7px 13px rgba(95,120,40,.30);
-  z-index:5;
+  z-index:6;
 }
 #body #bo_gall #gall_ul .gall_li:hover .gall_box,
 #body #bo_gall #gall_ul .gall_li:focus-within .gall_box{
