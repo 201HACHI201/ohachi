@@ -1,139 +1,59 @@
 /* =========================================================================
-   오하치 갤러리 — 세기말 일본 갠홈풍 다듬기  (v2 · 클릭 열림 고침)
-   ※ 갤러리(#bo_gall / #gall_ul / .gall_li ...) 요소에만 적용된다.
-      메인·고양이 메뉴·다른 페이지는 전혀 건드리지 않는다.
+   오하치 갤러리 — 그림 클릭하면 무조건 열리게 (보조 명령)
+   ※ 어느 화면(액자 안/밖)에서든, 썸네일을 누르면 그 칸의 진짜 링크를
+      대신 눌러 팝업을 연다. CSS만으로 안 풀리던 클릭 문제를 직접 해결.
    ========================================================================= */
+(function () {
+  function bindGallery(doc) {
+    if (!doc || doc.__ohachiGalleryBound) return;
 
-/* 갤러리 전체를 담는 '크림빛 선반' */
-#bo_gall{
-  max-width: 720px !important;
-  margin: 0 auto !important;
-  padding: 18px 18px 22px !important;
-  background: rgba(253,246,227,.94);
-  border: 2px solid #b6d98a;
-  border-radius: 14px;
-  box-shadow: 0 5px 16px rgba(63,107,30,.20), inset 0 0 0 1px #fffdf5;
-}
+    var ul = doc.getElementById('gall_ul');
+    if (!ul) return;                 // 이 문서엔 갤러리가 없음
+    doc.__ohachiGalleryBound = true;
 
-/* 카테고리 ( 전체 / 夢 ) — 또렷한 알약 버튼으로 */
-#bo_gall #navi_category ul{
-  display:flex; flex-wrap:wrap; gap:6px;
-  justify-content:center; align-items:center;
-  margin: 2px 0 14px; padding:0; list-style:none;
-}
-#bo_gall #navi_category li{ list-style:none; }
-#bo_gall #navi_category a{
-  display:inline-block; padding:3px 13px;
-  font-family:"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
-  font-size:12px; line-height:1.7; text-decoration:none;
-  color:#456b1e; background:#fffdf3;
-  border:1.5px solid #6f9a3e; border-radius:999px;
-  box-shadow: inset 0 1px 0 #fff;
-  transition: transform .12s, background .12s, color .12s;
-}
-#bo_gall #navi_category a:hover{
-  background:#8cc63f; color:#fff; border-color:#5f8a2e; transform:translateY(-1px);
-}
-#bo_gall #navi_category a#bo_cate_on{
-  background:#8a2b2b; color:#fff5ee; border-color:#6e1f1f;
-}
+    ul.addEventListener('click', function (e) {
+      // 관리자 체크박스를 누른 경우는 그대로 둔다
+      var t = e.target;
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'LABEL' ||
+                (t.closest && t.closest('.gall_chk')))) {
+        return;
+      }
+      // 클릭된 칸(li) 안의 진짜 링크(.bo_tit)를 찾아 대신 눌러준다
+      var li = t.closest ? t.closest('.gall_li') : null;
+      if (!li) return;
+      var link = li.querySelector('a.bo_tit, .gall_con a');
+      if (link) {
+        e.preventDefault();
+        e.stopPropagation();
+        link.click();               // open_view(...) 실행 → 팝업 열림
+      }
+    }, true);
+  }
 
-/* 섬네일 격자 — 크고 단정하게, 빈틈없이 */
-#body #bo_gall #gall_ul{
-  display:flex; flex-wrap:wrap; gap:8px;
-  max-width:100% !important;
-  justify-content:flex-start;
-  padding:0; margin:0 0 4px; list-style:none;
-}
-#body #bo_gall #gall_ul .gall_li{
-  width:104px !important; height:104px !important;
-  margin:0 !important;
-  position:relative; overflow:hidden;
-  list-style:none; cursor:pointer;
-  background:#fbf3df;
-  border:2px solid #bcdf92; border-radius:9px;
-  box-shadow: inset 0 0 0 1px #fffdf5, 0 2px 4px rgba(95,120,40,.16);
-  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
-}
-/* 그림이 없는 칸 → 단정한 자리표시 (✿) · 클릭은 통과시킨다 */
-#body #bo_gall #gall_ul .gall_li::before{
-  content:"✿"; position:absolute; inset:0; z-index:0;
-  display:flex; align-items:center; justify-content:center;
-  color:#d8c89a; font-size:22px;
-  pointer-events:none;
-}
-/* JS가 자동으로 채우는 빈 칸은 감춤 */
-#body #bo_gall #gall_ul .gall_li.empty{ display:none !important; }
+  function run() {
+    // 1) 현재 문서
+    bindGallery(document);
+    // 2) 혹시 액자(iframe) 안에 갤러리가 있으면 그 안에도 적용
+    var frames = document.querySelectorAll('iframe');
+    for (var i = 0; i < frames.length; i++) {
+      try {
+        var d = frames[i].contentDocument;
+        if (d) {
+          bindGallery(d);
+          // 액자 내용이 늦게 뜰 수도 있으니 한 번 더
+          frames[i].addEventListener('load', function () {
+            try { bindGallery(this.contentDocument); } catch (err) {}
+          });
+        }
+      } catch (err) { /* 다른 출처면 접근 불가 — 무시 */ }
+    }
+  }
 
-/* 섬네일 이미지 (인라인 background 그대로 살림) · 클릭은 통과시킨다 */
-#body #bo_gall #gall_ul .gall_box{
-  position:absolute; inset:0; z-index:1;
-  width:100%; height:100%;
-  background-size:cover !important; background-position:center !important;
-  transition: transform .25s ease;
-  pointer-events:none;
-}
-
-/* 칸 전체를 '진짜 링크'로 덮어 클릭 = 그림 열기 */
-#body #bo_gall #gall_ul .gall_con{
-  position:static; margin:0; pointer-events:none;
-}
-#body #bo_gall #gall_ul .gall_con .bo_tit{
-  position:absolute; inset:0; z-index:3;
-  display:block; width:100%; height:100%;
-  pointer-events:auto;
-  cursor:pointer; text-indent:-9999px; overflow:hidden;
-}
-/* 관리자 체크박스는 링크 위, 구석에 작게 */
-#body #bo_gall #gall_ul .gall_chk{
-  position:absolute; top:4px; right:4px; z-index:5;
-  margin:0; line-height:1; pointer-events:auto;
-}
-
-/* 마우스를 얹으면 살짝 떠오르고, 테두리가 자줏빛으로 */
-#body #bo_gall #gall_ul .gall_li:hover,
-#body #bo_gall #gall_ul .gall_li:focus-within{
-  transform:translateY(-3px);
-  border-color:#8a2b2b;
-  box-shadow: inset 0 0 0 1px #fffdf5, 0 7px 13px rgba(95,120,40,.30);
-  z-index:6;
-}
-#body #bo_gall #gall_ul .gall_li:hover .gall_box,
-#body #bo_gall #gall_ul .gall_li:focus-within .gall_box{
-  transform:scale(1.06);
-}
-#body #bo_gall #gall_ul .bo_tit:focus-visible{
-  outline:2px solid #8a2b2b; outline-offset:2px;
-}
-
-/* 페이지 번호 — 작은 알약으로 */
-.pg_wrap{ text-align:center; margin-top:16px; }
-.pg_wrap .pg{ display:inline-flex; flex-wrap:wrap; gap:4px; justify-content:center; }
-.pg_wrap .pg_page{
-  display:inline-block; min-width:24px; padding:3px 8px;
-  font-family:"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
-  font-size:12px; text-align:center; text-decoration:none;
-  color:#456b1e; background:#fffdf3;
-  border:1.5px solid #bcdf92; border-radius:7px;
-  transition: background .12s, color .12s;
-}
-.pg_wrap .pg_page:hover{ background:#8cc63f; color:#fff; border-color:#5f8a2e; }
-.pg_wrap strong.pg_current{
-  display:inline-block; min-width:24px; padding:3px 8px;
-  font-size:12px; text-align:center;
-  color:#fff5ee; background:#8a2b2b;
-  border:1.5px solid #6e1f1f; border-radius:7px;
-}
-
-/* 움직임 줄이기 설정을 켠 사람에겐 애니메이션 생략 */
-@media (prefers-reduced-motion: reduce){
-  #body #bo_gall #gall_ul .gall_li,
-  #body #bo_gall #gall_ul .gall_box{ transition:none; }
-}
-
-/* 좁은 화면 (휴대폰) */
-@media (max-width:480px){
-  #bo_gall{ padding:12px 12px 16px !important; }
-  #body #bo_gall #gall_ul{ gap:7px; justify-content:center; }
-  #body #bo_gall #gall_ul .gall_li{ width:88px !important; height:88px !important; }
-}
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', run);
+  } else {
+    run();
+  }
+  // 지연 로딩 대비, 잠깐 뒤 한 번 더
+  setTimeout(run, 1200);
+})();
