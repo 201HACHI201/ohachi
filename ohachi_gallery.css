@@ -1,59 +1,60 @@
 /* =========================================================================
-   오하치 갤러리 — 그림 클릭하면 무조건 열리게 (보조 명령)
-   ※ 어느 화면(액자 안/밖)에서든, 썸네일을 누르면 그 칸의 진짜 링크를
-      대신 눌러 팝업을 연다. CSS만으로 안 풀리던 클릭 문제를 직접 해결.
+   오하치 갤러리 — 그림 클릭하면 무조건 열리게 (보조 명령 v2)
+   ※ 갤러리가 액자(iframe) 속에 있어도, 그 안까지 끈질기게 찾아 들어가
+      썸네일 클릭 시 진짜 링크(open_view)를 대신 눌러 팝업을 연다.
    ========================================================================= */
 (function () {
-  function bindGallery(doc) {
-    if (!doc || doc.__ohachiGalleryBound) return;
+  var TRIES = 0, MAX_TRIES = 60;   // 약 30초 동안 0.5초 간격으로 계속 시도
 
-    var ul = doc.getElementById('gall_ul');
-    if (!ul) return;                 // 이 문서엔 갤러리가 없음
-    doc.__ohachiGalleryBound = true;
+  function bindDoc(doc) {
+    if (!doc) return false;
+    if (doc.__ohachiBound) return true;
+    var ul = doc.getElementById && doc.getElementById('gall_ul');
+    if (!ul) return false;                 // 이 문서엔 아직 갤러리 없음
+    doc.__ohachiBound = true;
 
     ul.addEventListener('click', function (e) {
-      // 관리자 체크박스를 누른 경우는 그대로 둔다
       var t = e.target;
+      // 관리자 체크박스 클릭은 그대로 둔다
       if (t && (t.tagName === 'INPUT' || t.tagName === 'LABEL' ||
-                (t.closest && t.closest('.gall_chk')))) {
-        return;
-      }
-      // 클릭된 칸(li) 안의 진짜 링크(.bo_tit)를 찾아 대신 눌러준다
+                (t.closest && t.closest('.gall_chk')))) return;
       var li = t.closest ? t.closest('.gall_li') : null;
       if (!li) return;
-      var link = li.querySelector('a.bo_tit, .gall_con a');
+      var link = li.querySelector('a.bo_tit, .gall_con a, a[onclick]');
       if (link) {
         e.preventDefault();
         e.stopPropagation();
-        link.click();               // open_view(...) 실행 → 팝업 열림
+        link.click();                      // open_view(...) 실행 → 팝업
       }
     }, true);
+    return true;
   }
 
-  function run() {
-    // 1) 현재 문서
-    bindGallery(document);
-    // 2) 혹시 액자(iframe) 안에 갤러리가 있으면 그 안에도 적용
-    var frames = document.querySelectorAll('iframe');
+  // 현재 문서 + 모든 iframe(같은 출처) 안을 훑어 갤러리를 찾는다
+  function sweep() {
+    var found = false;
+    if (bindDoc(document)) found = true;
+
+    var frames = document.getElementsByTagName('iframe');
     for (var i = 0; i < frames.length; i++) {
-      try {
-        var d = frames[i].contentDocument;
-        if (d) {
-          bindGallery(d);
-          // 액자 내용이 늦게 뜰 수도 있으니 한 번 더
-          frames[i].addEventListener('load', function () {
-            try { bindGallery(this.contentDocument); } catch (err) {}
-          });
-        }
-      } catch (err) { /* 다른 출처면 접근 불가 — 무시 */ }
+      var d = null;
+      try { d = frames[i].contentDocument || (frames[i].contentWindow && frames[i].contentWindow.document); }
+      catch (err) { d = null; }            // 다른 출처면 접근 불가
+      if (d && bindDoc(d)) found = true;
     }
+    return found;
+  }
+
+  function loop() {
+    var ok = sweep();
+    TRIES++;
+    // 갤러리를 아직 다 못 잡았고 시도 횟수가 남았으면 계속
+    if (TRIES < MAX_TRIES) setTimeout(loop, 500);
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', run);
+    document.addEventListener('DOMContentLoaded', loop);
   } else {
-    run();
+    loop();
   }
-  // 지연 로딩 대비, 잠깐 뒤 한 번 더
-  setTimeout(run, 1200);
 })();
