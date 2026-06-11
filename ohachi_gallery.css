@@ -1,0 +1,135 @@
+/* =========================================================================
+   오하치 갤러리 — 세기말 일본 갠홈풍 다듬기
+   ※ 이 CSS는 갤러리(#bo_gall / #gall_ul / .gall_li ...) 요소에만 적용된다.
+      메인 화면·고양이 메뉴·다른 페이지는 전혀 건드리지 않는다.
+   붙여넣는 곳:  관리자(/adm) → 디자인/스킨에서 style.css 를 편집할 수 있다면
+                그 파일 맨 아래에 통째로 붙여넣어라. (FTP 없이 가능)
+   ========================================================================= */
+
+/* 갤러리 전체를 담는 '크림빛 선반' */
+#bo_gall{
+  max-width: 720px !important;
+  margin: 0 auto !important;
+  padding: 18px 18px 22px !important;
+  background: rgba(253,246,227,.94);
+  border: 2px solid #b6d98a;
+  border-radius: 14px;
+  box-shadow: 0 5px 16px rgba(63,107,30,.20), inset 0 0 0 1px #fffdf5;
+}
+
+/* 카테고리 ( 전체 / 夢 ) — 또렷한 알약 버튼으로 */
+#bo_gall #navi_category ul{
+  display:flex; flex-wrap:wrap; gap:6px;
+  justify-content:center; align-items:center;
+  margin: 2px 0 14px; padding:0; list-style:none;
+}
+#bo_gall #navi_category li{ list-style:none; }
+#bo_gall #navi_category a{
+  display:inline-block; padding:3px 13px;
+  font-family:"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  font-size:12px; line-height:1.7; text-decoration:none;
+  color:#456b1e; background:#fffdf3;
+  border:1.5px solid #6f9a3e; border-radius:999px;
+  box-shadow: inset 0 1px 0 #fff;
+  transition: transform .12s, background .12s, color .12s;
+}
+#bo_gall #navi_category a:hover{
+  background:#8cc63f; color:#fff; border-color:#5f8a2e; transform:translateY(-1px);
+}
+#bo_gall #navi_category a#bo_cate_on{
+  background:#8a2b2b; color:#fff5ee; border-color:#6e1f1f;
+}
+
+/* 섬네일 격자 — 크고 단정하게, 빈틈없이 */
+#body #bo_gall #gall_ul{
+  display:flex; flex-wrap:wrap; gap:8px;
+  max-width:100% !important;
+  justify-content:flex-start;
+  padding:0; margin:0 0 4px; list-style:none;
+}
+#body #bo_gall #gall_ul .gall_li{
+  width:104px !important; height:104px !important;
+  margin:0 !important;
+  position:relative; overflow:hidden;
+  list-style:none; cursor:pointer;
+  background:#fbf3df;
+  border:2px solid #bcdf92; border-radius:9px;
+  box-shadow: inset 0 0 0 1px #fffdf5, 0 2px 4px rgba(95,120,40,.16);
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+/* 그림이 없는 칸 → 단정한 자리표시 (✿) */
+#body #bo_gall #gall_ul .gall_li::before{
+  content:"✿"; position:absolute; inset:0; z-index:0;
+  display:flex; align-items:center; justify-content:center;
+  color:#d8c89a; font-size:22px;
+}
+/* JS가 자동으로 채우는 빈 칸은 감춤 */
+#body #bo_gall #gall_ul .gall_li.empty{ display:none !important; }
+
+/* 섬네일 이미지 (인라인 background 그대로 살림) */
+#body #bo_gall #gall_ul .gall_box{
+  position:absolute; inset:0; z-index:1;
+  width:100%; height:100%;
+  background-size:cover !important; background-position:center !important;
+  transition: transform .25s ease;
+}
+/* 칸 전체를 클릭 영역으로 */
+#body #bo_gall #gall_ul .gall_con{
+  position:absolute; inset:0; z-index:3; margin:0;
+}
+#body #bo_gall #gall_ul .gall_con .bo_tit{
+  display:block; width:100%; height:100%;
+}
+/* 관리자 체크박스는 구석에 작게 */
+#body #bo_gall #gall_ul .gall_chk{
+  position:absolute; top:4px; right:4px; z-index:4;
+  margin:0; line-height:1;
+}
+
+/* 마우스를 얹으면 살짝 떠오르고, 테두리가 자줏빛으로 */
+#body #bo_gall #gall_ul .gall_li:hover,
+#body #bo_gall #gall_ul .gall_li:focus-within{
+  transform:translateY(-3px);
+  border-color:#8a2b2b;
+  box-shadow: inset 0 0 0 1px #fffdf5, 0 7px 13px rgba(95,120,40,.30);
+  z-index:5;
+}
+#body #bo_gall #gall_ul .gall_li:hover .gall_box,
+#body #bo_gall #gall_ul .gall_li:focus-within .gall_box{
+  transform:scale(1.06);
+}
+#body #bo_gall #gall_ul .bo_tit:focus-visible{
+  outline:2px solid #8a2b2b; outline-offset:2px;
+}
+
+/* 페이지 번호 — 작은 알약으로 */
+.pg_wrap{ text-align:center; margin-top:16px; }
+.pg_wrap .pg{ display:inline-flex; flex-wrap:wrap; gap:4px; justify-content:center; }
+.pg_wrap .pg_page{
+  display:inline-block; min-width:24px; padding:3px 8px;
+  font-family:"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  font-size:12px; text-align:center; text-decoration:none;
+  color:#456b1e; background:#fffdf3;
+  border:1.5px solid #bcdf92; border-radius:7px;
+  transition: background .12s, color .12s;
+}
+.pg_wrap .pg_page:hover{ background:#8cc63f; color:#fff; border-color:#5f8a2e; }
+.pg_wrap strong.pg_current{
+  display:inline-block; min-width:24px; padding:3px 8px;
+  font-size:12px; text-align:center;
+  color:#fff5ee; background:#8a2b2b;
+  border:1.5px solid #6e1f1f; border-radius:7px;
+}
+
+/* 움직임 줄이기 설정을 켠 사람에겐 애니메이션 생략 */
+@media (prefers-reduced-motion: reduce){
+  #body #bo_gall #gall_ul .gall_li,
+  #body #bo_gall #gall_ul .gall_box{ transition:none; }
+}
+
+/* 좁은 화면 (휴대폰) */
+@media (max-width:480px){
+  #bo_gall{ padding:12px 12px 16px !important; }
+  #body #bo_gall #gall_ul{ gap:7px; justify-content:center; }
+  #body #bo_gall #gall_ul .gall_li{ width:88px !important; height:88px !important; }
+}
